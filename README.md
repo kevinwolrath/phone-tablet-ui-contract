@@ -1,44 +1,65 @@
 # Phone / Tablet UI Contract
 
-This repository is an experiment, not a framework or a finished answer.
+This repository is an experiment, not a framework, standard, or finished answer.
 
-I have been struggling to get coding agents to consistently produce intuitive mobile interfaces. Left to themselves they can drift towards heavy CRUD-style screens: too many visible actions, too much equal-weight information, and a button for every capability.
+Coding agents can drift towards heavy CRUD-style mobile screens: too many visible actions, equal visual weight for everything, and a button for every capability. My first response was to keep adding rules to one large UI contract. That eventually created another problem: small changes required reading a large rule book containing mostly irrelevant instructions.
 
-My first response was to keep adding rules to one large UI contract. That helped for a while, but the contract became part of the problem. A small change could require the agent to read a large rule book containing mostly irrelevant instructions.
+The approach being tested here is scoped loading:
 
-The approach being tested here is different:
+1. Keep global principles small.
+2. Route a change by what is actually changing.
+3. Read page rules only when page composition or hierarchy changes.
+4. Read a component contract only when that component's behaviour or presentation changes.
+5. Do not follow links between contracts as a reading list.
+6. Prefer shared code or tests for stable mechanical rules.
 
-1. Start with a very small set of global principles.
-2. Route the change by what is actually being changed.
-3. Load the page contract only when page composition or hierarchy changes.
-4. Load a component contract only when that component's behaviour or presentation changes.
-5. Do not treat links between contracts as an instruction to read everything.
-
-For example, changing compact button behaviour on an ordinary page might require:
+Example:
 
 `CHANGE_SCOPE.md` → `GLOBAL.md` + `PAGE.md` + `components/BUTTON.md`
 
-Changing data behaviour without changing the UI may require no UI contract at all.
+A data-only change that leaves the interface unchanged may require no UI contract.
 
-## What I am trying to find out
+## Questions
 
-I do not know yet whether this is the right level of contract granularity.
+I do not know whether this is the right level of granularity. I am interested in feedback on:
 
-Questions I am interested in:
+- whether scoped contract loading is a sensible way to control agent context;
+- how granular contracts should become before routing itself becomes overhead;
+- how to prevent stale or contradictory contracts;
+- how precedence and intentional exceptions should work;
+- how to detect documentation that no longer matches implementation;
+- when a rule belongs in prose versus shared code, static checks or tests;
+- better ways for an agent to discover the right instructions without reading everything;
+- the point at which instruction context becomes part of the problem it was intended to solve.
 
-- Has anyone else had coding agents drift towards desktop/CRUD-style mobile UI?
-- Is scoped contract loading a sensible way to control context?
-- How do you stop small contracts becoming stale or contradictory?
-- How do you decide when a rule belongs in a contract versus code or tests?
-- Is there a better way to make the agent find the right instructions without making it read everything?
+Criticism and alternative approaches are welcome. Issues and pull requests are useful even when they argue that this structure is wrong. See `CONTRIBUTING.md` for the kinds of feedback this experiment is looking for.
 
-If you have tried something similar, or think this approach is wrong, I would be interested in the feedback.
+## Current structure
 
-## Contents
-
-- `contracts/CHANGE_SCOPE.md` — lightweight routing: decide what needs to be read.
-- `contracts/GLOBAL.md` — principles that genuinely apply everywhere.
+- `contracts/INDEX.md` — ownership map and rule-placement test.
+- `contracts/CHANGE_SCOPE.md` — lightweight routing.
+- `contracts/GLOBAL.md` — genuinely global principles.
 - `contracts/PAGE.md` — ordinary phone/tablet page composition and hierarchy.
 - `contracts/components/BUTTON.md` — button rendering and compact behaviour.
+- `contracts/components/ACTION_ROW.md` — responsive layout of legitimate actions.
+- `contracts/components/MODAL.md` — modal/dialog/sheet presentation.
+- `contracts/components/STATES.md` — empty, loading and error presentation.
+- `contracts/components/DRAG_DROP.md` — direct manipulation and drag-container behaviour.
 
-The examples have been anonymised from a real mobile project. Product-specific terminology, repository paths and business rules have deliberately been removed.
+## Ownership boundary
+
+The contracts are split by ownership rather than by screen. A page contract decides whether an action belongs on a page. A button contract decides how that action renders. An action-row contract decides how several legitimate actions lay out responsively. They should not copy each other's rules merely for emphasis.
+
+## Routing examples
+
+**Compact Back/Forward buttons:** route to page and button rules. Do not load modal, state or drag/drop rules simply because they exist.
+
+**API mapping fix with no UI change:** no UI contract.
+
+**Empty section inside a populated page:** route to page and state rules. Read button rules only if button behaviour also changes.
+
+## Scope
+
+The examples were anonymised from a real phone/tablet project. Product terminology, business logic, private links, tickets, credentials, assets and unrelated repository structure have been removed.
+
+The repository is intentionally small. It exposes the idea and its rough edges rather than presenting a large production rule set.
